@@ -7,9 +7,10 @@ TOKEN = "8357664064:AAErg5wtBqYNK3FnUYmf26tZXe7-Mxrb9_w"  # <-- bu joyga tokenin
 games = {}
 
 def new_board():
-    return [["⬜", "⬜", "⬜"],
-            ["⬜", "⬜", "⬜"],
-            ["⬜", "⬜", "⬜"]]
+    return [
+        ["⬜", "⬜", "⬜"],
+        ["⬜", "⬜", "⬜"],
+        ["⬜", "⬜", "⬜"]]
 
 def make_markup(board):
     keyboard = []
