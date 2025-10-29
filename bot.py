@@ -124,7 +124,6 @@ for i in range(3):
         
         
         await query.edit_message_text("Bu joy band! Boshqasini tanlang.")
-        
         return
 
     board[i][j] = "❌"
