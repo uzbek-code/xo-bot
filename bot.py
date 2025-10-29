@@ -109,7 +109,8 @@ app.add_handler(InlineQueryHandler(inline_query))
 app.add_handler(CallbackQueryHandler(button))
 
 print("✅ Inline XO bot ishga tushdi...")
-app.run_polling()    board = games.get(user.id, new_board())
+app.run_polling()   
+board = games.get(user.id, new_board())
     if board[i][j] != "⬜":
         await query.edit_message_text("Bu joy band! Boshqasini tanlang.")
         return
