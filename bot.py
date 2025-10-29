@@ -113,6 +113,7 @@ app.run_polling()
 
 
 board = games.get(user.id, new_board())
+for i in range(9)
     if board[i][j] != "⬜":
         await query.edit_message_text("Bu joy band! Boshqasini tanlang.")
         return
