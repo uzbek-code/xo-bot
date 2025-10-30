@@ -1,12 +1,18 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, InputTextMessageContent, Update
 from telegram.ext import ApplicationBuilder, InlineQueryHandler, CallbackQueryHandler, CommandHandler, ContextTypes
 from uuid import uuid4
+import os
+import sys
 
-TOKEN = "8357664064:AAErg5wtBqYNK3FnUYmf26tZXe7-Mxrb9_w"  # <-- bu joyga tokeningni yoz
+# Agar bu Webhook muhiti bo'lsa (Render.com ga mos keladi), Polling ishlamasligi mumkin.
+# Agar polling usulida qolishni istasangiz, quyidagi kodni ishlating.
+
+TOKEN = "8357664064:AAErg5wtBqYNK3FnUYmf26tZXe7-Mxrb9_w"  # <-- Bu joyga tokeningizni yozing
 
 games = {}
 
 def new_board():
+    """Yangi, bo'sh o'yin maydonini qaytaradi."""
     return [
         ["⬜", "⬜", "⬜"],
         ["⬜", "⬜", "⬜"],
@@ -17,6 +23,7 @@ def board_text(board):
     return "\n".join(" ".join(row) for row in board)
 
 def make_markup(board):
+    """O'yin taxtasi uchun inline klaviaturani yaratadi."""
     keyboard = []
     for i in range(3):
         row = []
@@ -38,7 +45,6 @@ def check_win(board, symbol):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """/start buyrug'iga javob beradi"""
-    # Inline rejimida o'yinni taklif qilish
     await update.message.reply_text("X va O o‘yinini boshlash uchun inline rejimida yozing (masalan, @bot_usernamingiz)", reply_markup=None)
 
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -69,7 +75,18 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         games[key] = {"board": new_board(), "players": {}, "turn": None}
 
     game = games[key]
-    i, j = map(int, data.split(','))
+    # Agar data bo'sh bo'lsa (bo'sh tugma yuborilgan bo'lsa), xato bermaslik uchun tekshiruv
+    if not data or data == 'None':
+        await query.answer("Noto'g'ri yurish ma'lumoti.", show_alert=True)
+        return
+
+    try:
+        i, j = map(int, data.split(','))
+    except ValueError:
+        # Agar split xato bersa
+        await query.answer("Noto'g'ri tugma ma'lumoti.", show_alert=True)
+        return
+
     board = game["board"]
 
     # O'yinchilarni tayinlash (symbol va name ni saqlash)
@@ -86,7 +103,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Tekshiruvlar
     if not player_info:
-        await query.answer("Bu o‘yin 2 kishilik! O'yinga qo'shilish uchun do'stingizni taklif qiling.", show_alert=True)
+        await query.answer("Bu o‘yin 2 kishilik! Iltimos, boshqa o'yinchi qo'shilishini kuting.", show_alert=True)
         return
 
     if user.id != game["turn"]:
@@ -112,7 +129,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # Durang holatini tekshirish
-    # Taxtada bo'sh katak qolmaganini tekshirish
     if all(cell != "⬜" for row in board for cell in row):
         await query.edit_message_text(f"{board_text(board)}\n\n🤝 Durang!", reply_markup=None)
         if key in games:
@@ -134,12 +150,19 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text(board_text(board) + "\n\n" + status, reply_markup=make_markup(board))
 
 # --- BOTNI ISHGA TUSHIRISH ---
-app = ApplicationBuilder().token(TOKEN).build()
-app.add_handler(CommandHandler("start", start))
-app.add_handler(InlineQueryHandler(inline_query))
-app.add_handler(CallbackQueryHandler(button))
+# Polling usuli Render Web Services uchun mos kelmasligi mumkin, lekin sizning talabingiz bo'yicha.
+try:
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(InlineQueryHandler(inline_query))
+    app.add_handler(CallbackQueryHandler(button))
 
-print("✅ X va O bot ishga tushdi...")
-# Polling usuli Render Web Services uchun mos kelmasligi mumkin, 
-# lekin bu kod sizning buyrug'ingiz bo'yicha yozilgan.
-app.run_polling(poll_interval=1)
+    print("✅ X va O bot ishga tushdi...")
+    # sys.exit() orqali ilova to'xtatilishining oldini olish uchun run_polling ishlatiladi.
+    app.run_polling(poll_interval=1)
+
+except Exception as e:
+    print(f"❌ Xato yuz berdi: {e}")
+    # Render muhitida ApplicationBuilder ishlashi uchun barcha kerakli qismlar import qilingan.
+
+
