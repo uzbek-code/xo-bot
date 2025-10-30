@@ -1,2 +1,9 @@
 python-telegram-bot==20.7
-httpx==0.25.2
+certifi
+idna
+charset-normalizer
+sniffio
+h11
+httpcore
+httpx
+anyio
