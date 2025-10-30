@@ -120,7 +120,7 @@ for i in range(3):
         if board[i][j] != "⬜":
             # bu yerda harakat yoziladi, masalan:
             print(f"Katak ({i}, {j}) band: {board[i][j]}")
-        await query.edit_message_text("Bu joy band! Boshqasini tanlang.")
+        
         return
 
     board[i][j] = "❌"
